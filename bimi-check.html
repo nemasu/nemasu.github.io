@@ -1,444 +1,533 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIMI/VMC SVG Checker</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            padding: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        h1, h2 {
-            color: #555;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            margin-top: 0;
-        }
-        textarea {
-            width: 98%;
-            height: 150px;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #svgDisplay {
-            border: 1px dashed #ccc;
-            min-height: 100px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            max-width: 400px;
-            overflow: hidden;
-        }
-        #svgDisplay svg {
-             max-width: 100%;
-             max-height: 300px;
-             height: auto;
-        }
-        #backgroundChecks {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        .bg-preview {
-            width: 150px;
-            height: 150px;
-            border: 1px solid #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-        .bg-preview svg {
-            max-width: 100%;
-            max-height: 100%;
-        }
-        #dimensionsOutput, #bimiChecksOutput {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-         #bimiChecksOutput ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-         #bimiChecksOutput li {
-            margin-bottom: 5px;
-         }
-        .check-pass::before { content: '✅ '; color: green; }
-        .check-fail::before { content: '❌ '; color: red; }
-        .check-warn::before { content: '⚠️ '; color: orange; }
-        .check-info::before { content: 'ℹ️ '; color: blue; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIMI/VMC SVG Checker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      padding: 20px;
+      background-color: #f4f4f4;
+      color: #333;
+    }
 
-        #sizePreviews {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 10px;
-            align-items: flex-start;
-        }
-        .size-preview-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-        .size-preview-box {
-            border: 1px solid #ccc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-            box-sizing: border-box;
-            overflow: hidden;
-            background-color: #fff;
-        }
-        .size-preview-box svg {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        .size-preview-label {
-            font-size: 0.8em;
-            color: #555;
-        }
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
 
-    </style>
+    h1,
+    h2 {
+      color: #555;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+      margin-top: 0;
+    }
+
+    textarea {
+      width: 98%;
+      height: 150px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #svgDisplay {
+      border: 1px dashed #ccc;
+      min-height: 100px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      max-width: 400px;
+      overflow: hidden;
+    }
+
+    #svgDisplay svg {
+      max-width: 100%;
+      max-height: 300px;
+      height: auto;
+    }
+
+    #backgroundChecks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .bg-preview {
+      width: 150px;
+      height: 150px;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .bg-preview svg {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    #dimensionsOutput,
+    #bimiChecksOutput {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    #bimiChecksOutput ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #bimiChecksOutput li {
+      margin-bottom: 5px;
+    }
+
+    .check-pass::before {
+      content: '✅ ';
+      color: green;
+    }
+
+    .check-fail::before {
+      content: '❌ ';
+      color: red;
+    }
+
+    .check-warn::before {
+      content: '⚠️ ';
+      color: orange;
+    }
+
+    .check-info::before {
+      content: 'ℹ️ ';
+      color: blue;
+    }
+
+    #sizePreviews {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 10px;
+      align-items: flex-start;
+    }
+
+    .size-preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .size-preview-box {
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      box-sizing: border-box;
+      overflow: hidden;
+      background-color: #fff;
+    }
+
+    .size-preview-box svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .size-preview-label {
+      font-size: 0.8em;
+      color: #555;
+    }
+  </style>
 </head>
+
 <body>
 
-    <h1>SVG BIMI/VMC Checker</h1>
+  <h1>SVG BIMI/VMC Checker</h1>
 
-    <div class="container">
-        <h2>1. Paste SVG (XML or Base64)</h2>
-        <textarea id="base64Input" placeholder="Paste your SVG XML content or Base64 encoded SVG here..."></textarea>
-        <button id="processButton">Check SVG</button>
+  <div class="container">
+    <h2>1. Paste SVG (XML or Base64)</h2>
+    <textarea id="base64Input" placeholder="Paste your SVG XML content or Base64 encoded SVG here..."></textarea>
+    <button id="processButton">Check SVG</button>
+  </div>
+
+  <div class="container">
+    <h2>2. SVG Preview</h2>
+    <div id="svgDisplay">
+      <p>Preview will appear here</p>
     </div>
+    <div id="dimensionsOutput">Dimensions: Not yet calculated</div>
+  </div>
 
-    <div class="container">
-        <h2>2. SVG Preview</h2>
-        <div id="svgDisplay"><p>Preview will appear here</p></div>
-        <div id="dimensionsOutput">Dimensions: Not yet calculated</div>
+  <div class="container">
+    <h2>3. Transparency Check (Backgrounds)</h2>
+    <div id="backgroundChecks">
+      <p>Previews with different backgrounds will appear here.</p>
     </div>
+  </div>
 
-    <div class="container">
-        <h2>3. Transparency Check (Backgrounds)</h2>
-        <div id="backgroundChecks">
-            <p>Previews with different backgrounds will appear here.</p>
-        </div>
+  <div class="container">
+    <h2>4. Size Previews</h2>
+    <div style="margin-bottom: 10px;">
+      <label for="sizePreviewBgColor">Background Color:</label>
+      <input type="color" id="sizePreviewBgColor" value="#FFFFFF">
     </div>
-
-    <div class="container">
-        <h2>4. Size Previews</h2>
-        <div style="margin-bottom: 10px;">
-            <label for="sizePreviewBgColor">Background Color:</label>
-            <input type="color" id="sizePreviewBgColor" value="#FFFFFF">
-        </div>
-        <div id="sizePreviews">
-            <p>Previews at different fixed sizes will appear here.</p>
-        </div>
+    <div id="sizePreviews">
+      <p>Previews at different fixed sizes will appear here.</p>
     </div>
+  </div>
 
-     <div class="container">
-        <h2>5. BIMI/VMC Compliance Checks</h2>
-        <div id="bimiChecksOutput">
-            <p>Compliance check results will appear here.</p>
-        </div>
+  <div class="container">
+    <h2>5. BIMI/VMC Compliance Checks</h2>
+    <div id="bimiChecksOutput">
+      <p>Compliance check results will appear here.</p>
     </div>
+  </div>
 
-    <script>
-        document.getElementById('processButton').addEventListener('click', () => {
-            const inputText = document.getElementById('base64Input').value.trim();
-            const svgDisplay = document.getElementById('svgDisplay');
-            const dimensionsOutput = document.getElementById('dimensionsOutput');
-            const backgroundChecks = document.getElementById('backgroundChecks');
-            const sizePreviewsContainer = document.getElementById('sizePreviews');
-            const bimiChecksOutput = document.getElementById('bimiChecksOutput');
-            const sizePreviewBgColorInput = document.getElementById('sizePreviewBgColor');
+  <script>
+    document.getElementById('processButton').addEventListener('click', () => {
+      const inputText = document.getElementById('base64Input').value.trim();
+      const svgDisplay = document.getElementById('svgDisplay');
+      const dimensionsOutput = document.getElementById('dimensionsOutput');
+      const backgroundChecks = document.getElementById('backgroundChecks');
+      const sizePreviewsContainer = document.getElementById('sizePreviews');
+      const bimiChecksOutput = document.getElementById('bimiChecksOutput');
+      const sizePreviewBgColorInput = document.getElementById('sizePreviewBgColor');
 
-            const checksList = bimiChecksOutput.querySelector('ul') || document.createElement('ul');
-            if (!bimiChecksOutput.contains(checksList)) {
-                 bimiChecksOutput.innerHTML = '';
-                 bimiChecksOutput.appendChild(checksList);
-            }
-            const addCheckResult = (className, message) => {
-                 const li = document.createElement('li');
-                 li.className = className;
-                 li.textContent = message;
-                 checksList.appendChild(li);
-            };
-
-
-            svgDisplay.innerHTML = '<p>Processing...</p>';
-            dimensionsOutput.textContent = 'Dimensions: Calculating...';
-            backgroundChecks.innerHTML = '';
-            sizePreviewsContainer.innerHTML = '';
-            checksList.innerHTML = '';
-            sizePreviewBgColorInput.value = '#FFFFFF';
+      const checksList = bimiChecksOutput.querySelector('ul') || document.createElement('ul');
+      if (!bimiChecksOutput.contains(checksList)) {
+        bimiChecksOutput.innerHTML = '';
+        bimiChecksOutput.appendChild(checksList);
+      }
+      const addCheckResult = (className, message) => {
+        const li = document.createElement('li');
+        li.className = className;
+        li.textContent = message;
+        checksList.appendChild(li);
+      };
 
 
-            if (!inputText) {
-                svgDisplay.innerHTML = '<p style="color: red;">Error: No input provided.</p>';
-                dimensionsOutput.textContent = 'Dimensions: Not calculated';
-                addCheckResult('check-fail', 'No SVG content (XML or Base64) provided.');
-                return;
-            }
-
-            let decodedSvg = '';
-            let isBase64Input = false;
-
-            const isDirectXml = inputText.toLowerCase().startsWith('<svg') || inputText.toLowerCase().startsWith('<?xml');
-
-            if (isDirectXml) {
-                decodedSvg = inputText;
-                addCheckResult('check-info', 'Detected direct XML/SVG input.');
-            } else {
-                // Assume Base64 input
-                isBase64Input = true;
-                addCheckResult('check-info', 'Attempting to decode input as Base64.');
-                try {
-                    let processedBase64 = inputText.replace(/-/g, '+').replace(/_/g, '/').replace(/[\r\n]+/g, '');
-                     while (processedBase64.length % 4) {
-                        processedBase64 += '=';
-                     }
-                    decodedSvg = atob(processedBase64);
-                } catch (e) {
-                    svgDisplay.innerHTML = '<p style="color: red;">Error: Invalid input. Not valid XML/SVG and failed to decode as Base64.</p>';
-                    dimensionsOutput.textContent = 'Dimensions: Not calculated';
-                    addCheckResult('check-fail', `Input is not direct XML/SVG and failed to decode as Base64: ${e.message}`);
-                    console.error("Input processing error:", e);
-                    return;
-                }
-            }
-
-            if (!decodedSvg.trim().toLowerCase().startsWith('<svg') &&
-                !decodedSvg.trim().toLowerCase().startsWith('<?xml')) {
-                addCheckResult('check-fail', 'Processed content does not start with <svg> or <?xml>. Is this a valid SVG?');
-                svgDisplay.innerHTML = '<p style="color: red;">Error: Processed content doesn\'t look like an SVG.</p>';
-                dimensionsOutput.textContent = 'Dimensions: Not calculated';
-                return;
-            } else {
-                 if (isBase64Input) {
-                    addCheckResult('check-pass', 'Decoded Base64 content starts with <svg> or <?xml>.');
-                 }
-            }
-
-            svgDisplay.innerHTML = decodedSvg;
-            const svgElement = svgDisplay.querySelector('svg');
-
-            if (!svgElement) {
-                 svgDisplay.innerHTML = '<p style="color: red;">Error: Could not find SVG element after decoding/parsing.</p>';
-                 dimensionsOutput.textContent = 'Dimensions: Not calculated';
-                 addCheckResult('check-fail', 'Failed to parse the SVG element in the display area.');
-                 sizePreviewsContainer.innerHTML = '<p style="color: red;">Cannot generate size previews.</p>';
-                 return;
-            }
-
-            setTimeout(() => {
-                try {
-                    const rect = svgElement.getBoundingClientRect();
-                    if (rect.width > 0 && rect.height > 0) {
-                       dimensionsOutput.textContent = `Rendered Dimensions: ${rect.width.toFixed(2)}px x ${rect.height.toFixed(2)}px`;
-                       addCheckResult('check-info', `Rendered dimensions: ${rect.width.toFixed(2)}px x ${rect.height.toFixed(2)}px.`);
-                    } else if (svgElement.getBBox) {
-                         const bbox = svgElement.getBBox();
-                         dimensionsOutput.textContent = `Potential BBox Dimensions: ${bbox.width.toFixed(2)} x ${bbox.height.toFixed(2)}`;
-                         addCheckResult('check-warn', `Rendered size is 0x0. BBox size: ${bbox.width.toFixed(2)} x ${bbox.height.toFixed(2)}. Check SVG content/styles.`);
-                    } else {
-                         dimensionsOutput.textContent = 'Dimensions: Could not calculate (SVG might be empty or invalid).';
-                         addCheckResult('check-warn', 'Could not determine SVG dimensions.');
-                    }
-                } catch (e) {
-                    dimensionsOutput.textContent = 'Dimensions: Error calculating dimensions.';
-                    addCheckResult('check-fail', `Error getting dimensions: ${e.message}.`);
-                    console.error("Dimension calculation error:", e);
-                }
-            }, 100); // Small delay
-
-            // Background Checks
-            const bgColors = {
-                'White': '#FFFFFF',
-                'Black': '#000000',
-                'Grey': '#808080',
-                'Red': '#FF0000',
-                'Green': '#00FF00',
-                'Blue': '#0000FF'
-            };
-
-            backgroundChecks.innerHTML = '';
-            for (const [name, color] of Object.entries(bgColors)) {
-                const previewDiv = document.createElement('div');
-                previewDiv.className = 'bg-preview';
-                previewDiv.style.backgroundColor = color;
-                previewDiv.setAttribute('title', `Background: ${name}`);
-                previewDiv.innerHTML = decodedSvg;
-                backgroundChecks.appendChild(previewDiv);
-            }
-
-            const previewSizes = [32, 64, 128, 256, 512, 1024];
-            const initialBgColor = sizePreviewBgColorInput.value;
-            sizePreviewsContainer.innerHTML = '';
-
-            previewSizes.forEach(size => {
-                const containerDiv = document.createElement('div');
-                containerDiv.className = 'size-preview-container';
-
-                const previewBox = document.createElement('div');
-                previewBox.className = 'size-preview-box';
-                previewBox.style.width = `${size}px`;
-                previewBox.style.height = `${size}px`;
-                previewBox.style.backgroundColor = initialBgColor;
-                previewBox.innerHTML = decodedSvg;
-
-                const label = document.createElement('div');
-                label.className = 'size-preview-label';
-                label.textContent = `${size}x${size}`;
-
-                containerDiv.appendChild(previewBox);
-                containerDiv.appendChild(label);
-                sizePreviewsContainer.appendChild(containerDiv);
-            });
-
-            sizePreviewBgColorInput.addEventListener('input', (event) => {
-                const newBgColor = event.target.value;
-                const previewBoxes = sizePreviewsContainer.querySelectorAll('.size-preview-box');
-                previewBoxes.forEach(box => {
-                    box.style.backgroundColor = newBgColor;
-                });
-            });
+      svgDisplay.innerHTML = '<p>Processing...</p>';
+      dimensionsOutput.textContent = 'Dimensions: Calculating...';
+      backgroundChecks.innerHTML = '';
+      sizePreviewsContainer.innerHTML = '';
+      checksList.innerHTML = '';
+      sizePreviewBgColorInput.value = '#FFFFFF';
 
 
-             const svgTagMatch = decodedSvg.match(/<svg[^>]*>/i); // Get the opening SVG tag
-             const svgTag = svgTagMatch ? svgTagMatch[0] : '';
+      if (!inputText) {
+        svgDisplay.innerHTML = '<p style="color: red;">Error: No input provided.</p>';
+        dimensionsOutput.textContent = 'Dimensions: Not calculated';
+        addCheckResult('check-fail', 'No SVG content (XML or Base64) provided.');
+        return;
+      }
 
-             // 1. Profile and Version Check
-             const hasBaseProfile = /baseProfile\s*=\s*["']tiny-ps["']/i.test(svgTag);
-             const hasVersion = /version\s*=\s*["']1\.2["']/i.test(svgTag);
-             if (hasBaseProfile) addCheckResult('check-pass', 'Found baseProfile="tiny-ps".');
-             else addCheckResult('check-fail', 'Missing required baseProfile="tiny-ps" attribute in <svg> tag.');
+      let decodedSvg = '';
+      let isBase64Input = false;
 
-             if (hasVersion) addCheckResult('check-pass', 'Found version="1.2".');
-             else addCheckResult('check-fail', 'Missing required version="1.2" attribute in <svg> tag.');
+      const isDirectXml = inputText.toLowerCase().startsWith('<svg') || inputText.toLowerCase().startsWith('<?xml');
 
-             // 2. Title Check
-             const titleMatch = decodedSvg.match(/<svg[^>]*>\s*<title>([^<]+)<\/title>/i);
-             if (titleMatch && titleMatch[1] && titleMatch[1].trim().length > 0) {
-                 addCheckResult('check-pass', `Found non-empty <title>: "${titleMatch[1].trim()}"`);
-             } else {
-                 addCheckResult('check-fail', 'Missing required non-empty <title> element as a direct child of the <svg> tag.');
-             }
+      if (isDirectXml) {
+        decodedSvg = inputText;
+        addCheckResult('check-info', 'Detected direct XML/SVG input.');
+      } else {
+        // Assume Base64 input
+        isBase64Input = true;
+        addCheckResult('check-info', 'Attempting to decode input as Base64.');
+        try {
+          let processedBase64 = inputText.replace(/-/g, '+').replace(/_/g, '/').replace(/[\r\n]+/g, '');
+          while (processedBase64.length % 4) {
+            processedBase64 += '=';
+          }
+          decodedSvg = atob(processedBase64);
+        } catch (e) {
+          svgDisplay.innerHTML = '<p style="color: red;">Error: Invalid input. Not valid XML/SVG and failed to decode as Base64.</p>';
+          dimensionsOutput.textContent = 'Dimensions: Not calculated';
+          addCheckResult('check-fail', `Input is not direct XML/SVG and failed to decode as Base64: ${e.message}`);
+          console.error("Input processing error:", e);
+          return;
+        }
+      }
 
-             // 3. Forbidden Elements/Attributes Check
-             const forbiddenTags = ['script', 'a', 'foreignObject', 'style']; // style tag is forbidden, inline styles ok
-             const forbiddenAttributes = ['onclick', 'onload', 'onerror', 'onmouseover']; // etc.
-             const externalRefRegex = /xlink:href\s*=/i; // Basic check for xlink:href
-             const imageHrefRegex = /<image[^>]+href\s*=/i; // Check for href in image (can be external)
+      if (!decodedSvg.trim().toLowerCase().startsWith('<svg') &&
+        !decodedSvg.trim().toLowerCase().startsWith('<?xml')) {
+        addCheckResult('check-fail', 'Processed content does not start with <svg> or <?xml>. Is this a valid SVG?');
+        svgDisplay.innerHTML = '<p style="color: red;">Error: Processed content doesn\'t look like an SVG.</p>';
+        dimensionsOutput.textContent = 'Dimensions: Not calculated';
+        return;
+      } else {
+        if (isBase64Input) {
+          addCheckResult('check-pass', 'Decoded Base64 content starts with <svg> or <?xml>.');
+        }
+      }
 
-             forbiddenTags.forEach(tag => {
-                 if (decodedSvg.toLowerCase().includes(`<${tag}`)) {
-                     addCheckResult('check-fail', `Contains potentially forbidden element: <${tag}>.`);
-                 }
-             });
-              forbiddenAttributes.forEach(attr => {
-                 if (decodedSvg.toLowerCase().includes(`${attr}=`)) {
-                     addCheckResult('check-warn', `Contains potentially restricted event attribute: ${attr}.`);
-                 }
-             });
+      svgDisplay.innerHTML = decodedSvg;
+      const svgElement = svgDisplay.querySelector('svg');
 
-             if (externalRefRegex.test(decodedSvg)) {
-                addCheckResult('check-fail', 'Contains xlink:href attribute, which is forbidden for external references.');
-             }
-              if (imageHrefRegex.test(decodedSvg)) {
-                 const imageTags = decodedSvg.match(/<image[^>]*>/gi) || [];
-                 let externalImageFound = false;
-                 imageTags.forEach(imgTag => {
-                     const hrefMatch = imgTag.match(/href\s*=\s*["'](https?:|\/\/)[^"']*/i);
-                     if(hrefMatch) {
-                         externalImageFound = true;
-                     }
-                 });
-                 if (externalImageFound) {
-                    addCheckResult('check-fail', 'Contains <image> tag with potentially external href attribute.');
-                 } else {
-                     addCheckResult('check-info', 'Contains <image> tag, ensure href does not point to external resources (data URI is ok).');
-                 }
-             }
+      if (!svgElement) {
+        svgDisplay.innerHTML = '<p style="color: red;">Error: Could not find SVG element after decoding/parsing.</p>';
+        dimensionsOutput.textContent = 'Dimensions: Not calculated';
+        addCheckResult('check-fail', 'Failed to parse the SVG element in the display area.');
+        sizePreviewsContainer.innerHTML = '<p style="color: red;">Cannot generate size previews.</p>';
+        return;
+      }
 
-             const animationTags = ['animate', 'set', 'animateMotion', 'animateColor', 'animateTransform'];
-             animationTags.forEach(tag => {
-                 if (decodedSvg.toLowerCase().includes(`<${tag}`)) {
-                     addCheckResult('check-fail', `Contains forbidden animation element: <${tag}>.`);
-                 }
-             });
+      setTimeout(() => {
+        try {
+          const rect = svgElement.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            dimensionsOutput.textContent = `Rendered Dimensions: ${rect.width.toFixed(2)}px x ${rect.height.toFixed(2)}px`;
+            addCheckResult('check-info', `Rendered dimensions: ${rect.width.toFixed(2)}px x ${rect.height.toFixed(2)}px.`);
+          } else if (svgElement.getBBox) {
+            const bbox = svgElement.getBBox();
+            dimensionsOutput.textContent = `Potential BBox Dimensions: ${bbox.width.toFixed(2)} x ${bbox.height.toFixed(2)}`;
+            addCheckResult('check-warn', `Rendered size is 0x0. BBox size: ${bbox.width.toFixed(2)} x ${bbox.height.toFixed(2)}. Check SVG content/styles.`);
+          } else {
+            dimensionsOutput.textContent = 'Dimensions: Could not calculate (SVG might be empty or invalid).';
+            addCheckResult('check-warn', 'Could not determine SVG dimensions.');
+          }
+        } catch (e) {
+          dimensionsOutput.textContent = 'Dimensions: Error calculating dimensions.';
+          addCheckResult('check-fail', `Error getting dimensions: ${e.message}.`);
+          console.error("Dimension calculation error:", e);
+        }
+      }, 100); // Small delay
 
+      // Background Checks
+      const bgColors = {
+        'White': '#FFFFFF',
+        'Black': '#000000',
+        'Grey': '#808080',
+        'Red': '#FF0000',
+        'Green': '#00FF00',
+        'Blue': '#0000FF'
+      };
 
-             // 4. Aspect Ratio Check (from viewBox) - BIMI recommends square.
-             const viewBoxMatch = svgTag.match(/viewBox\s*=\s*["']\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s*["']/i);
-             if (viewBoxMatch) {
-                 const vbWidth = parseFloat(viewBoxMatch[3]);
-                 const vbHeight = parseFloat(viewBoxMatch[4]);
-                 if (vbWidth > 0 && vbHeight > 0) {
-                    if (Math.abs(vbWidth - vbHeight) < 0.01) { // Allow for tiny floating point differences
-                         addCheckResult('check-pass', `ViewBox aspect ratio is square (${vbWidth}x${vbHeight}).`);
-                    } else {
-                         addCheckResult('check-warn', `ViewBox aspect ratio is NOT square (${vbWidth}x${vbHeight}). BIMI strongly recommends square logos.`);
-                    }
-                 } else {
-                     addCheckResult('check-warn', 'ViewBox attribute found but width or height is zero.');
-                 }
-             } else {
-                 addCheckResult('check-warn', 'No viewBox attribute found. SVG may render at default browser dimensions (e.g., 300x150) or unexpectedly large/small. Adding a viewBox is strongly recommended for consistent sizing and aspect ratio control.');
-             }
+      backgroundChecks.innerHTML = '';
+      for (const [name, color] of Object.entries(bgColors)) {
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'bg-preview';
+        previewDiv.style.backgroundColor = color;
+        previewDiv.setAttribute('title', `Background: ${name}`);
+        previewDiv.innerHTML = decodedSvg;
+        backgroundChecks.appendChild(previewDiv);
+      }
 
-             // 5. File Size Info (Approximate) - Adapt based on input type
-             if (isBase64Input) {
-                 const base64Length = inputText.length; // Use original inputText length
-                 const approxBytes = base64Length * 3 / 4; // Base64 is ~4/3 original size
-                 addCheckResult('check-info', `Base64 length: ${base64Length} characters. Approximate original size: ~${(approxBytes / 1024).toFixed(2)} KB. (BIMI limit is typically 32KB).`);
-             } else {
-                 // For direct XML, show its length
-                 const xmlLength = decodedSvg.length;
-                 addCheckResult('check-info', `XML content length: ${xmlLength} characters (~${(xmlLength / 1024).toFixed(2)} KB). (BIMI limit is typically 32KB).`);
-             }
+      const previewSizes = [32, 64, 128, 256, 512, 1024];
+      const initialBgColor = sizePreviewBgColorInput.value;
+      sizePreviewsContainer.innerHTML = '';
 
+      previewSizes.forEach(size => {
+        const containerDiv = document.createElement('div');
+        containerDiv.className = 'size-preview-container';
 
+        const previewBox = document.createElement('div');
+        previewBox.className = 'size-preview-box';
+        previewBox.style.width = `${size}px`;
+        previewBox.style.height = `${size}px`;
+        previewBox.style.backgroundColor = initialBgColor;
+        previewBox.innerHTML = decodedSvg;
+
+        const label = document.createElement('div');
+        label.className = 'size-preview-label';
+        label.textContent = `${size}x${size}`;
+
+        containerDiv.appendChild(previewBox);
+        containerDiv.appendChild(label);
+        sizePreviewsContainer.appendChild(containerDiv);
+      });
+
+      sizePreviewBgColorInput.addEventListener('input', (event) => {
+        const newBgColor = event.target.value;
+        const previewBoxes = sizePreviewsContainer.querySelectorAll('.size-preview-box');
+        previewBoxes.forEach(box => {
+          box.style.backgroundColor = newBgColor;
         });
-    </script>
+      });
+
+
+      const svgTagMatch = decodedSvg.match(/<svg[^>]*>/i); // Get the opening SVG tag
+      const svgTag = svgTagMatch ? svgTagMatch[0] : '';
+
+      // 1. Profile and Version Check
+      const hasBaseProfile = /baseProfile\s*=\s*["']tiny-ps["']/i.test(svgTag);
+      const hasVersion = /version\s*=\s*["']1\.2["']/i.test(svgTag);
+      if (hasBaseProfile) addCheckResult('check-pass', 'Found baseProfile="tiny-ps".');
+      else addCheckResult('check-fail', 'Missing required baseProfile="tiny-ps" attribute in <svg> tag.');
+
+      if (hasVersion) addCheckResult('check-pass', 'Found version="1.2".');
+      else addCheckResult('check-fail', 'Missing required version="1.2" attribute in <svg> tag.');
+
+      // 2. Title Check
+      const titleMatch = decodedSvg.match(/<svg[^>]*>\s*<title>([^<]+)<\/title>/i);
+      if (titleMatch && titleMatch[1] && titleMatch[1].trim().length > 0) {
+        addCheckResult('check-pass', `Found non-empty <title>: "${titleMatch[1].trim()}"`);
+      } else {
+        addCheckResult('check-fail', 'Missing required non-empty <title> element as a direct child of the <svg> tag.');
+      }
+
+      // 3. Forbidden Elements/Attributes Check
+      const forbiddenTags = ['script', 'a', 'foreignObject', 'style']; // style tag is forbidden, inline styles ok
+      const forbiddenAttributes = ['onclick', 'onload', 'onerror', 'onmouseover']; // etc.
+      const externalRefRegex = /xlink:href\s*=/i; // Basic check for xlink:href
+      const imageHrefRegex = /<image[^>]+href\s*=/i; // Check for href in image (can be external)
+
+      forbiddenTags.forEach(tag => {
+        if (decodedSvg.toLowerCase().includes(`<${tag}`)) {
+          addCheckResult('check-fail', `Contains potentially forbidden element: <${tag}>.`);
+        }
+      });
+      forbiddenAttributes.forEach(attr => {
+        if (decodedSvg.toLowerCase().includes(`${attr}=`)) {
+          addCheckResult('check-warn', `Contains potentially restricted event attribute: ${attr}.`);
+        }
+      });
+
+      if (externalRefRegex.test(decodedSvg)) {
+        addCheckResult('check-fail', 'Contains xlink:href attribute, which is forbidden for external references.');
+      }
+      if (imageHrefRegex.test(decodedSvg)) {
+        const imageTags = decodedSvg.match(/<image[^>]*>/gi) || [];
+        let externalImageFound = false;
+        imageTags.forEach(imgTag => {
+          const hrefMatch = imgTag.match(/href\s*=\s*["'](https?:|\/\/)[^"']*/i);
+          if (hrefMatch) {
+            externalImageFound = true;
+          }
+        });
+        if (externalImageFound) {
+          addCheckResult('check-fail', 'Contains <image> tag with potentially external href attribute.');
+        } else {
+          addCheckResult('check-info', 'Contains <image> tag, ensure href does not point to external resources (data URI is ok).');
+        }
+      }
+
+      const animationTags = ['animate', 'set', 'animateMotion', 'animateColor', 'animateTransform'];
+      animationTags.forEach(tag => {
+        if (decodedSvg.toLowerCase().includes(`<${tag}`)) {
+          addCheckResult('check-fail', `Contains forbidden animation element: <${tag}>.`);
+        }
+      });
+
+
+      // 4. ViewBox Checks (Presence, Validity, Square Aspect Ratio)
+      // Regex allows for numbers, including scientific notation and negatives for min-x, min-y.
+      const viewBoxMatch = svgTag.match(/viewBox\s*=\s*["']\s*([-0-9.eE]+)\s+([-0-9.eE]+)\s+([-0-9.eE]+)\s+([-0-9.eE]+)\s*["']/i);
+      if (viewBoxMatch) {
+        addCheckResult('check-pass', 'The <svg> tag has a viewBox attribute.');
+        // viewBoxMatch[1] is min-x, viewBoxMatch[2] is min-y
+        const vbWidth = parseFloat(viewBoxMatch[3]);
+        const vbHeight = parseFloat(viewBoxMatch[4]);
+
+        if (vbWidth > 0 && vbHeight > 0) {
+          if (Math.abs(vbWidth - vbHeight) < 0.01) { // Allow for tiny floating point differences
+            addCheckResult('check-pass', `ViewBox aspect ratio is square (${vbWidth}x${vbHeight}).`);
+          } else {
+            addCheckResult('check-fail', `ViewBox aspect ratio is NOT square (${vbWidth}x${vbHeight}). BIMI requires a square logo and viewBox.`);
+          }
+
+          // Check for minimum dimensions (must be > 95)
+          if (vbWidth > 95 && vbHeight > 95) {
+            addCheckResult('check-pass', `ViewBox dimensions (${vbWidth}x${vbHeight}) are both greater than 95.`);
+          } else {
+            addCheckResult('check-fail', `ViewBox dimensions (${vbWidth}x${vbHeight}) are not both greater than 95. Both width and height must be > 95.`);
+          }
+        } else {
+          addCheckResult('check-fail', `ViewBox attribute has non-positive width or height (${vbWidth}x${vbHeight}). Both must be greater than zero.`);
+        }
+      } else {
+        addCheckResult('check-fail', 'The <svg> tag is MISSING the viewBox attribute. It is required by SVG Tiny 1.2 and for BIMI compliance.');
+      }
+
+      // 5. Optional <svg> width/height attribute check
+      const widthAttrMatch = svgTag.match(/width\s*=\s*["']([^"']+)["']/i);
+      const heightAttrMatch = svgTag.match(/height\s*=\s*["']([^"']+)["']/i);
+      const widthVal = widthAttrMatch ? widthAttrMatch[1] : null;
+      const heightVal = heightAttrMatch ? heightAttrMatch[1] : null;
+
+      function parseDimension(value) {
+        if (!value) return null;
+        // Matches "100", "100.5", "100px", "100.5px" - case insensitive for "px"
+        if (/^\d+(\.\d+)?(px)?$/i.test(value)) {
+          return parseFloat(value);
+        }
+        return value; // Return as string if it's "100%" or "auto" etc.
+      }
+
+      if (widthVal && heightVal) { // Both attributes are present
+        const parsedWidth = parseDimension(widthVal);
+        const parsedHeight = parseDimension(heightVal);
+
+        if (typeof parsedWidth === 'number' && typeof parsedHeight === 'number') {
+          if (Math.abs(parsedWidth - parsedHeight) < 0.01) { // Allow for tiny floating point differences
+            addCheckResult('check-pass', `<svg> 'width' and 'height' attributes are present and define a square aspect ratio (${widthVal}x${heightVal}).`);
+          } else {
+            addCheckResult('check-warn', `<svg> 'width' (${widthVal}) and 'height' (${heightVal}) attributes are present but define a non-square aspect ratio. While viewBox is primary for BIMI aspect ratio, these attributes can influence final rendering size and ideally should also be square if present.`);
+          }
+
+          // Check for minimum dimensions (must be > 95)
+          if (parsedWidth > 95 && parsedHeight > 95) {
+            addCheckResult('check-pass', `<svg> 'width' (${widthVal}) and 'height' (${heightVal}) attributes are numeric and both greater than 95.`);
+          } else {
+            addCheckResult('check-fail', `<svg> 'width' (${widthVal}) and 'height' (${heightVal}) attributes are numeric, but are not both greater than 95. If present and numeric, both must be > 95.`);
+          }
+        } else {
+          addCheckResult('check-info', `<svg> 'width' ("${widthVal}") and/or 'height' ("${heightVal}") attributes are present but use non-pixel units or 'auto'. Ensure these resolve to a square if intended. The viewBox is primary for BIMI aspect ratio.`);
+        }
+      } else if (widthVal || heightVal) { // Only one of them is present
+        addCheckResult('check-info', `<svg> has only one of 'width'/'height' attributes defined (width: "${widthVal || 'not set'}", height: "${heightVal || 'not set'}"). If the other is unspecified, it defaults to "100%". For explicit sizing, both are usually needed or rely primarily on viewBox.`);
+      } else {
+        addCheckResult('check-info', `<svg> 'width' and 'height' attributes are not present. This is acceptable; sizing will be determined by CSS, the 'viewBox', or default to 100% of the parent container.`);
+      }
+
+      // 6. File Size Info (Approximate) - Adapt based on input type
+      if (isBase64Input) {
+        const base64Length = inputText.length; // Use original inputText length
+        const approxBytes = base64Length * 3 / 4; // Base64 is ~4/3 original size
+        addCheckResult('check-info', `Base64 length: ${base64Length} characters. Approximate original size: ~${(approxBytes / 1024).toFixed(2)} KB. (BIMI limit is typically 32KB).`);
+      } else {
+        // For direct XML, show its length
+        const xmlLength = decodedSvg.length;
+        addCheckResult('check-info', `XML content length: ${xmlLength} characters (~${(xmlLength / 1024).toFixed(2)} KB). (BIMI limit is typically 32KB).`);
+      }
+    });
+  </script>
 
 </body>
+
 </html>
