@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Office Stretch Timer</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --header: #334155;
+            --primary: #38bdf8;
+            --accent: #4ade80;
+            --warn: #fbbf24;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container { max-width: 900px; width: 100%; }
+
+        .header-box {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .clock-large { font-size: 1.8rem; font-family: monospace; margin: 10px 0; color: var(--primary); }
+
+        .btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+
+        button {
+            padding: 12px 24px;
+            font-weight: 700;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .sync-btn { background: var(--primary); color: #000; }
+        .start-btn { background: #64748b; color: white; }
+        .test-btn { background: transparent; border: 1px solid #475569; color: var(--text-dim); }
+        
+        button:hover { filter: brightness(1.2); transform: translateY(-1px); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.3s;
+        }
+
+        .card.active {
+            border-color: var(--warn);
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+        }
+
+        h2 { margin: 8px 0; font-size: 1.3rem; color: var(--primary); }
+        .freq-tag { font-size: 0.7rem; font-weight: 800; color: var(--accent); letter-spacing: 0.1em; }
+        .timer-val { font-size: 2.5rem; font-family: monospace; font-weight: bold; margin: 15px 0; color: white; }
+        
+        /* Unified Task Styling */
+        .task-summary { font-size: 0.95rem; line-height: 1.5; color: var(--text-dim); flex-grow: 1; }
+        .task-summary b { color: var(--text-main); }
+
+        .reset-link {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        .reset-link:hover { opacity: 1; }
+
+        .guide-section {
+            margin-top: 40px;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+        }
+        .guide-item { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #334155; }
+        .guide-item:last-child { border: none; }
+        .guide-item h4 { margin: 0 0 10px 0; color: var(--accent); font-size: 1.1rem; }
+        .guide-item p { margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-dim); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-box">
+        <h1 style="margin:0">Home Office Stretch Timer</h1>
+        <div id="clock" class="clock-large">--:--:--</div>
+        <div class="btn-group">
+            <button class="sync-btn" onclick="startSynced()">Sync to Clock (:00 / :30)</button>
+            <button class="start-btn" onclick="startStandard()">Start (Manual)</button>
+            <button class="test-btn" onclick="playAlarm()">Test Alarm 🔊</button>
+        </div>
+        <p id="status" style="font-size: 0.85rem; margin-top: 15px; color: var(--text-dim);">Ready to begin.</p>
+    </div>
+
+    <div class="grid">
+        <!-- 30 MIN -->
+        <div class="card" id="card-30">
+            <span class="freq-tag">Every 30 Mins</span>
+            <h2>Micro-Check</h2>
+            <div class="timer-val" id="timer-30">30:00</div>
+            <div class="task-summary">
+                <b>Move:</b> 1 Chin Tuck + 1 Scapular Squeeze.<br>
+                <b>Hold:</b> Maintain the pinch for 5 seconds.
+            </div>
+            <div class="reset-link" onclick="manualReset(30)">Acknowledge</div>
+        </div>
+
+        <!-- 60 MIN -->
+        <div class="card" id="card-60">
+            <span class="freq-tag">Every 60 Mins</span>
+            <h2>Decompressor</h2>
+            <div class="timer-val" id="timer-60">60:00</div>
+            <div class="task-summary">
+                <b>Move:</b> 10 Chin Tucks + 10 Scapular Squeezes.<br>
+                <b>Focus:</b> Open nerve exit points in the neck.
+            </div>
+            <div class="reset-link" onclick="manualReset(60)">Acknowledge</div>
+        </div>
+
+        <!-- 2.5 HOUR -->
+        <div class="card" id="card-reset">
+            <span class="freq-tag">Every 2.5 Hours</span>
+            <h2>Total Reset</h2>
+            <div class="timer-val" id="timer-reset">--:--</div>
+            <div class="task-summary">
+                <b>Move:</b> Corner Stretch + 10 Wall Slides.<br>
+                <b>Setup:</b> Back and head flat against the wall.
+            </div>
+            <div class="reset-link" onclick="manualReset('reset')">Acknowledge</div>
+        </div>
+    </div>
+
+    <div class="guide-section">
+        <h3 style="margin-top:0; color: var(--text-main);">Movement Guide</h3>
+        
+        <div class="guide-item">
+            <h4>Chin Tuck & Scapular Squeeze</h4>
+            <p>Draw your chin straight back to create a "double chin" (don't look down). Simultaneously pinch your shoulder blades together like you're squeezing a pencil between them. Keep shoulders away from ears.</p>
+        </div>
+
+        <div class="guide-item">
+            <h4>Wall Slides (Cactus Position)</h4>
+            <p>Stand with <b>heels, butt, upper back, and back of head</b> touching the wall. Raise arms into <b>"cactus" position</b> (elbows and back of hands touching the wall). Slowly slide arms up and down a few inches while keeping all points in contact with the wall.</p>
+        </div>
+
+        <div class="guide-item">
+            <h4>The Nerve Glide</h4>
+            <p>Extend one arm out, palm up. Tilt head <b>AWAY</b> from the arm while curling wrist <b>IN</b>. Then tilt head <b>TOWARD</b> the arm while extending wrist <b>OUT</b>. Do 5–10 times slowly twice daily (no timer).</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let timers = {
+        30: { endTime: null, duration: 1800, label: "Micro-Check", due: false },
+        60: { endTime: null, duration: 3600, label: "Decompressor", due: false },
+        'reset': { endTime: null, duration: 9000, label: "Total Reset", due: false }
+    };
+
+    let isRunning = false;
+    let runMode = 'manual'; // 'manual' or 'synced'
+    let audioCtx = null;
+
+    function playAlarm() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const duration = 4.0; 
+        const pulseHz = 4; 
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        lfo.type = 'square';
+        lfo.frequency.setValueAtTime(pulseHz, audioCtx.currentTime);
+        lfoGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        lfo.connect(lfoGain.gain);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime + duration - 0.5);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+
+        osc.start();
+        lfo.start();
+        osc.stop(audioCtx.currentTime + duration);
+        lfo.stop(audioCtx.currentTime + duration);
+    }
+
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+
+    function formatTime(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return (h > 0 ? h + ":" : "") + m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
+    }
+
+    function startStandard() {
+        const now = Date.now();
+        runMode = 'manual';
+        for (let id in timers) {
+            timers[id].due = false;
+            timers[id].endTime = now + (timers[id].duration * 1000);
+            document.getElementById(`card-${id}`).classList.remove('active');
+        }
+        isRunning = true;
+        document.getElementById('status').innerText = "Running: Manual Intervals";
+    }
+
+    function startSynced() {
+        runMode = 'synced';
+        for (let id in timers) {
+            timers[id].due = false;
+            document.getElementById(`card-${id}`).classList.remove('active');
+        }
+        isRunning = true;
+        document.getElementById('status').innerText = "Running: Synced to :00 / :30";
+        tick(); // Immediate update
+    }
+
+    function manualReset(id) {
+        timers[id].due = false;
+        document.getElementById(`card-${id}`).classList.remove('active');
+    }
+
+    function getRemaining(id, now) {
+        if (runMode === 'manual') {
+            return Math.max(0, Math.round((timers[id].endTime - now.getTime()) / 1000));
+        } else {
+            // Synced Mode Logic
+            const mins = now.getMinutes();
+            const secs = now.getSeconds();
+            const totalSecs = (mins * 60) + secs;
+            const hoursSecs = (now.getHours() * 3600) + totalSecs;
+
+            if (id == 30) {
+                const rem = 1800 - (totalSecs % 1800);
+                return rem === 1800 ? 0 : rem;
+            } else if (id == 60) {
+                const rem = 3600 - (totalSecs % 3600);
+                return rem === 3600 ? 0 : rem;
+            } else if (id === 'reset') {
+                const rem = 9000 - (hoursSecs % 9000);
+                return rem === 9000 ? 0 : rem;
+            }
+        }
+        return 0;
+    }
+
+    function tick() {
+        if (!isRunning) return;
+
+        const now = new Date();
+        for (let id in timers) {
+            let remaining = getRemaining(id, now);
+            
+            document.getElementById(`timer-${id}`).innerText = formatTime(remaining);
+
+            if (remaining === 0 && !timers[id].due) {
+                timers[id].due = true;
+                document.getElementById(`card-${id}`).classList.add('active');
+                playAlarm();
+                
+                if (runMode === 'manual') {
+                    timers[id].endTime = now.getTime() + (timers[id].duration * 1000);
+                }
+            }
+        }
+    }
+
+    setInterval(tick, 1000);
+</script>
+
+</body>
+</html>
