@@ -192,9 +192,9 @@
 
 <script>
     let timers = {
-        30: { endTime: null, duration: 1800, label: "Micro-Check", due: false },
-        60: { endTime: null, duration: 3600, label: "Decompressor", due: false },
-        'reset': { endTime: null, duration: 9000, label: "Total Reset", due: false }
+        30: { endTime: null, duration: 1800, label: "Micro-Check", due: false, lastPeriod: null },
+        60: { endTime: null, duration: 3600, label: "Decompressor", due: false, lastPeriod: null },
+        'reset': { endTime: null, duration: 9000, label: "Total Reset", due: false, lastPeriod: null }
     };
 
     let isRunning = false;
@@ -257,9 +257,19 @@
 
     function startSynced() {
         runMode = 'synced';
+        const now = new Date();
+        const mins = now.getMinutes();
+        const secs = now.getSeconds();
+        const totalSecs = (mins * 60) + secs;
+        const hoursSecs = (now.getHours() * 3600) + totalSecs;
+
         for (let id in timers) {
             timers[id].due = false;
             document.getElementById(`card-${id}`).classList.remove('active');
+            // Initialize lastPeriod so first tick doesn't false-trigger
+            if (id == 30) timers[id].lastPeriod = Math.floor(totalSecs / 1800);
+            else if (id == 60) timers[id].lastPeriod = Math.floor(totalSecs / 3600);
+            else if (id === 'reset') timers[id].lastPeriod = Math.floor(hoursSecs / 9000);
         }
         isRunning = true;
         document.getElementById('status').innerText = "Running: Synced to :00 / :30";
@@ -273,7 +283,7 @@
 
     function getRemaining(id, now) {
         if (runMode === 'manual') {
-            return Math.max(0, Math.round((timers[id].endTime - now.getTime()) / 1000));
+            return { remaining: Math.max(0, Math.round((timers[id].endTime - now.getTime()) / 1000)), period: null };
         } else {
             // Synced Mode Logic
             const mins = now.getMinutes();
@@ -282,17 +292,20 @@
             const hoursSecs = (now.getHours() * 3600) + totalSecs;
 
             if (id == 30) {
+                const period = Math.floor(totalSecs / 1800);
                 const rem = 1800 - (totalSecs % 1800);
-                return rem === 1800 ? 0 : rem;
+                return { remaining: rem === 1800 ? 0 : rem, period };
             } else if (id == 60) {
+                const period = Math.floor(totalSecs / 3600);
                 const rem = 3600 - (totalSecs % 3600);
-                return rem === 3600 ? 0 : rem;
+                return { remaining: rem === 3600 ? 0 : rem, period };
             } else if (id === 'reset') {
+                const period = Math.floor(hoursSecs / 9000);
                 const rem = 9000 - (hoursSecs % 9000);
-                return rem === 9000 ? 0 : rem;
+                return { remaining: rem === 9000 ? 0 : rem, period };
             }
         }
-        return 0;
+        return { remaining: 0, period: null };
     }
 
     function tick() {
@@ -300,11 +313,23 @@
 
         const now = new Date();
         for (let id in timers) {
-            let remaining = getRemaining(id, now);
+            let { remaining, period } = getRemaining(id, now);
             
             document.getElementById(`timer-${id}`).innerText = formatTime(remaining);
 
-            if (remaining === 0 && !timers[id].due) {
+            // In synced mode, detect period change (robust against timer drift)
+            // In manual mode, detect remaining hitting 0
+            let shouldTrigger = false;
+            if (runMode === 'synced') {
+                if (timers[id].lastPeriod !== null && period !== timers[id].lastPeriod) {
+                    shouldTrigger = true;
+                }
+                timers[id].lastPeriod = period;
+            } else {
+                shouldTrigger = (remaining === 0);
+            }
+
+            if (shouldTrigger && !timers[id].due) {
                 timers[id].due = true;
                 document.getElementById(`card-${id}`).classList.add('active');
                 playAlarm();
