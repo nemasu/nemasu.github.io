@@ -313,12 +313,93 @@
       color: #fff;
       border-color: #1a73e8;
     }
+
+    /* Tab Styles */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .tab-btn {
+      padding: 10px 22px;
+      background: #e9ecef;
+      color: #555;
+      border: 1px solid #ddd;
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      cursor: pointer;
+      font-size: 1em;
+      position: relative;
+      bottom: -2px;
+    }
+
+    .tab-btn:hover {
+      background: #d0d7de;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: #007bff;
+      border-color: #ddd;
+      border-bottom: 2px solid #fff;
+      font-weight: 600;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* URL Checker Styles */
+    #urlInput {
+      width: 98%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 1em;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+
+    #urlChecksOutput {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      min-height: 40px;
+    }
+
+    #urlChecksOutput ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #urlChecksOutput li {
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 
 <body>
 
   <h1>SVG BIMI/VMC Checker</h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="svg-checker">SVG Checker</button>
+    <button class="tab-btn" data-tab="url-checker">URL Checker</button>
+  </div>
+
+  <div id="svg-checker" class="tab-panel active">
 
   <div class="container">
     <h2>1. Paste SVG (XML or Base64)</h2>
@@ -369,6 +450,20 @@
       <p>Compliance check results will appear here.</p>
     </div>
   </div>
+
+  </div><!-- /svg-checker tab panel -->
+
+  <div id="url-checker" class="tab-panel">
+    <div class="container">
+      <h2>URL Invalid Character Checker</h2>
+      <p style="color:#555;margin-top:0;">Checks for characters that are invalid in a URL:
+        <code>\n</code> <code>\r</code> <code>;</code> <code>\u0000</code> <code>%</code> <code>`</code> <code>?</code> <code>~</code>
+      </p>
+      <input type="text" id="urlInput" placeholder="Paste URL here...">
+      <button id="urlCheckButton">Check URL</button>
+      <div id="urlChecksOutput"><p>Results will appear here.</p></div>
+    </div>
+  </div><!-- /url-checker tab panel -->
 
   <script>
     document.getElementById('processButton').addEventListener('click', () => {
@@ -729,6 +824,62 @@
         const xmlLength = decodedSvg.length;
         addCheckResult('check-info', `XML content length: ${xmlLength} characters (~${(xmlLength / 1024).toFixed(2)} KB). (BIMI limit is typically 32KB).`);
       }
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // URL Invalid Character Checker
+    document.getElementById('urlCheckButton').addEventListener('click', () => {
+      const url = document.getElementById('urlInput').value;
+      const output = document.getElementById('urlChecksOutput');
+
+      if (!url) {
+        output.innerHTML = '<ul><li class="check-fail">No URL provided.</li></ul>';
+        return;
+      }
+
+      const invalidChars = [
+        { char: '\n',                   label: '\\n (newline)' },
+        { char: '\r',                   label: '\\r (carriage return)' },
+        { char: ';',                    label: '; (semicolon)' },
+        { char: String.fromCharCode(0), label: '\\u0000 (null)' },
+        { char: '%',                    label: '% (percent)' },
+        { char: '`',                    label: '` (backtick)' },
+        { char: '?',                    label: '? (question mark)' },
+        { char: '~',                    label: '~ (tilde)' },
+      ];
+
+      const ul = document.createElement('ul');
+      let anyFound = false;
+
+      invalidChars.forEach(({ char, label }) => {
+        if (url.includes(char)) {
+          anyFound = true;
+          const count = url.split(char).length - 1;
+          const li = document.createElement('li');
+          li.className = 'check-fail';
+          li.textContent = `Found invalid character ${label} — ${count} occurrence${count !== 1 ? 's' : ''}`;
+          ul.appendChild(li);
+        }
+      });
+
+      if (!anyFound) {
+        const li = document.createElement('li');
+        li.className = 'check-pass';
+        li.textContent = 'No invalid characters found.';
+        ul.appendChild(li);
+      }
+
+      output.innerHTML = '';
+      output.appendChild(ul);
     });
   </script>
 
