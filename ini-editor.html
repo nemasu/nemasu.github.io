@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INI File Editor</title>
+    <meta name="description" content="A premium web-based GUI utility for editing INI configuration files.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-1: #0f172a;
+            --bg-2: #1e1b4b;
+            --bg-3: #312e81;
+            --glass-bg: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-hover: rgba(255, 255, 255, 0.12);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-1: #6366f1;
+            --accent-2: #8b5cf6;
+            --accent-3: #ec4899;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            margin: 1rem;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #e0e7ff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            margin: 0 1rem 1rem 1rem;
+            gap: 1rem;
+            overflow: hidden;
+        }
+
+        #upload-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            transition: opacity 0.3s ease;
+        }
+
+        #upload-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .upload-box {
+            padding: 3rem;
+            text-align: center;
+            border: 2px dashed rgba(99, 102, 241, 0.5);
+            border-radius: 20px;
+            background: rgba(30, 27, 75, 0.6);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-box:hover, .upload-box.dragover {
+            background: rgba(30, 27, 75, 0.9);
+            border-color: var(--accent-1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .sidebar {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            font-weight: 500;
+        }
+
+        .section-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
+        .section-item {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-item:hover {
+            background: var(--glass-hover);
+            color: var(--text-primary);
+        }
+
+        .section-item.active {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), transparent);
+            color: var(--text-primary);
+            border-left: 3px solid var(--accent-1);
+        }
+
+        .editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-header h2 {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .fields-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+            align-content: start;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field-group label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .field-group input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .field-group input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .empty-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: var(--text-secondary);
+            flex-direction: column;
+            gap: 1rem;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="upload-overlay">
+        <div class="upload-box glass-panel" id="drop-zone">
+            <div class="upload-icon">📄</div>
+            <h2>Upload INI Config File</h2>
+            <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.9rem;">
+                Drag & drop your INI file here, or click to browse
+            </p>
+            <input type="file" id="file-input" accept=".txt,.ini">
+        </div>
+    </div>
+
+    <header class="glass-panel">
+        <h1>INI Configuration Editor</h1>
+        <div style="display: flex; gap: 1rem;">
+            <button class="btn" id="new-file-btn" style="background: var(--glass-bg); box-shadow: none;">Import New File</button>
+            <button class="btn" id="export-btn" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Export / Save
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-header">
+                Configuration Sections
+            </div>
+            <div class="section-list" id="section-list">
+                <!-- Sections populated by JS -->
+            </div>
+        </aside>
+
+        <section class="editor glass-panel">
+            <div class="editor-header">
+                <h2 id="current-section-title">Select a section</h2>
+                <div id="section-stats" style="color: var(--text-secondary); font-size: 0.85rem;"></div>
+            </div>
+            <div class="fields-container" id="fields-container">
+                <div class="empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    <p>Select a section from the sidebar to edit its properties.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let iniData = {};
+        let originalFileName = 'edited_config.txt';
+        let currentActiveSection = null;
+
+        const overlay = document.getElementById('upload-overlay');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const sectionList = document.getElementById('section-list');
+        const fieldsContainer = document.getElementById('fields-container');
+        const currentSectionTitle = document.getElementById('current-section-title');
+        const sectionStats = document.getElementById('section-stats');
+        const exportBtn = document.getElementById('export-btn');
+        const newFileBtn = document.getElementById('new-file-btn');
+
+        // Drag and Drop Events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        newFileBtn.addEventListener('click', () => {
+            overlay.classList.remove('hidden');
+        });
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            originalFileName = file.name;
+            
+            const processContent = (data) => {
+                parseINI(data);
+                overlay.classList.add('hidden');
+                exportBtn.disabled = false;
+                renderSidebar();
+            };
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                // \uFFFD is the standard replacement character for invalid UTF-8 sequences
+                if (content.includes('\uFFFD')) {
+                    const fallbackReader = new FileReader();
+                    fallbackReader.onload = (fe) => processContent(fe.target.result);
+                    fallbackReader.readAsText(file, 'windows-1252');
+                } else {
+                    processContent(content);
+                }
+            };
+            // First try reading as UTF-8
+            reader.readAsText(file, 'utf-8');
+        }
+
+        function parseINI(data) {
+            iniData = {};
+            let currentSection = '';
+            
+            const lines = data.split(/\r?\n/);
+            
+            for (let line of lines) {
+                line = line.trim();
+                // Handle comments and empty lines
+                if (!line || line.startsWith(';') || line.startsWith('#')) continue;
+                
+                // Handle sections
+                if (line.startsWith('[') && line.endsWith(']')) {
+                    currentSection = line.substring(1, line.length - 1);
+                    iniData[currentSection] = {};
+                } 
+                // Handle key-value pairs
+                else {
+                    const separatorIndex = line.indexOf('=');
+                    if (separatorIndex !== -1) {
+                        const key = line.substring(0, separatorIndex).trim();
+                        const value = line.substring(separatorIndex + 1).trim();
+                        
+                        if (currentSection === '' && !iniData['']) {
+                            iniData[''] = {};
+                        }
+                        
+                        // We might not have a section defined yet, fallback to empty global section
+                        if (!iniData[currentSection]) {
+                            iniData[currentSection] = {};
+                        }
+                        
+                        iniData[currentSection][key] = value;
+                    }
+                }
+            }
+        }
+
+        function renderSidebar() {
+            sectionList.innerHTML = '';
+            
+            const sections = Object.keys(iniData);
+            
+            sections.forEach(section => {
+                const div = document.createElement('div');
+                div.className = 'section-item';
+                
+                let displayName = section === '' ? 'Global Settings' : `[${section}]`;
+                
+                // Enhance naming for tools based on 'Name' or 'TypName' property if available inside
+                if (section.startsWith('WKZ_') && iniData[section] && iniData[section]['Name']) {
+                     displayName = `[${section}] ${iniData[section]['Name']}`;
+                }
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = displayName;
+                nameSpan.style.whiteSpace = 'nowrap';
+                nameSpan.style.overflow = 'hidden';
+                nameSpan.style.textOverflow = 'ellipsis';
+                nameSpan.style.marginRight = '8px';
+                
+                const countSpan = document.createElement('span');
+                countSpan.style.fontSize = '0.75rem';
+                countSpan.style.opacity = '0.6';
+                countSpan.style.flexShrink = '0';
+                countSpan.textContent = Object.keys(iniData[section]).length;
+                
+                div.appendChild(nameSpan);
+                div.appendChild(countSpan);
+                
+                div.onclick = () => {
+                    document.querySelectorAll('.section-item').forEach(el => el.classList.remove('active'));
+                    div.classList.add('active');
+                    renderEditor(section, displayName);
+                };
+                
+                sectionList.appendChild(div);
+            });
+
+            if (sections.length > 0) {
+                // Auto-select first section
+                sectionList.firstChild.click();
+            }
+        }
+
+        function renderEditor(section, displayName) {
+            currentActiveSection = section;
+            currentSectionTitle.textContent = displayName || (section === '' ? 'Global Settings' : `[${section}]`);
+            
+            const keys = Object.keys(iniData[section]);
+            sectionStats.textContent = `${keys.length} properties`;
+            
+            fieldsContainer.innerHTML = '';
+            
+            if (keys.length === 0) {
+                fieldsContainer.innerHTML = '<div class="empty-state"><p>No properties in this section.</p></div>';
+                return;
+            }
+
+            keys.forEach(key => {
+                const val = iniData[section][key];
+                
+                const group = document.createElement('div');
+                group.className = 'field-group';
+                
+                const label = document.createElement('label');
+                label.textContent = key;
+                label.title = key;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = val;
+                
+                // Update internal data on change
+                input.addEventListener('input', (e) => {
+                    iniData[section][key] = e.target.value;
+                    
+                    // Rerender sidebar if Name changes so it updates immediately
+                    if (key === 'Name' && section.startsWith('WKZ_')) {
+                        // Debounce might be nice, but for now simple innerText update
+                        const activeItem = document.querySelector('.section-item.active span:first-child');
+                        if (activeItem) {
+                             activeItem.textContent = `[${section}] ${e.target.value}`;
+                             currentSectionTitle.textContent = `[${section}] ${e.target.value}`;
+                        }
+                    }
+                });
+                
+                group.appendChild(label);
+                group.appendChild(input);
+                fieldsContainer.appendChild(group);
+            });
+        }
+
+        exportBtn.addEventListener('click', () => {
+            let output = '';
+            
+            // Handle global settings first if any
+            if (iniData['']) {
+                for (const [key, value] of Object.entries(iniData[''])) {
+                    output += `${key}=${value}\n`;
+                }
+                output += '\n';
+            }
+            
+            // Handle sections
+            for (const [section, values] of Object.entries(iniData)) {
+                if (section === '') continue;
+                
+                output += `[${section}]\n`;
+                for (const [key, value] of Object.entries(values)) {
+                    output += `${key}=${value}\n`;
+                }
+                output += '\n'; // Add newline between sections
+            }
+            
+            // Remove last newline if needed, but standard INI usually has it
+            
+            // Create blob and download
+            const blob = new Blob([output], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // Insert _edited into filename correctly
+            let exportName = originalFileName;
+            const lastDot = exportName.lastIndexOf('.');
+            if (lastDot !== -1) {
+                exportName = exportName.substring(0, lastDot) + '_edited' + exportName.substring(lastDot);
+            } else {
+                exportName += '_edited.txt';
+            }
+            
+            a.download = exportName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
