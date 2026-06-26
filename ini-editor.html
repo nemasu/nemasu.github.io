@@ -367,7 +367,14 @@
         dropZone.addEventListener('drop', handleDrop, false);
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.add('hidden');
+            }
+        });
+
         newFileBtn.addEventListener('click', () => {
+            fileInput.value = '';
             overlay.classList.remove('hidden');
         });
 
